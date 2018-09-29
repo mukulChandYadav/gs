@@ -1,18 +1,12 @@
 defmodule GS do
+  use Application
+
   @moduledoc """
   Documentation for GS.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> GS.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def start(_type, _args) do
+    GS.Supervisor.start_link(name: Supervisor)
   end
+
 end
