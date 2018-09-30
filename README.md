@@ -15,6 +15,20 @@ def deps do
 end
 ```
 
+## Execute
+
+### Linux
+
+    mix escript.build && ./gs numNodes topology algorithm
+
+### Windows
+     Powershell
+     mix escript.build -and escript.exe gs numNodes topology algorithm
+
+     CMD
+     mix escript.build && escript.exe gs numNodes topology algorithm
+
+
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/gs](https://hexdocs.pm/gs).
