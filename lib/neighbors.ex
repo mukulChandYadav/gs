@@ -40,10 +40,15 @@ defmodule Neighbors do
             "imp2D" ->
                 num = if rem(num,2)==0, do: num, else: (num-1)
                 Registry.start_link(keys: :unique, name: Registry.NeighReg) 
-                for node <- 1..num do
-                    the_random_neigh = :rand.uniform
+                randoms_remaining = []
+                randoms_remaining = 
+                for i <- 0..(num-1) do 
+                    randoms_remaining++i
                 end
 
+                create_registry("imp2D", randoms_remaining, num)
+
+                "line" -> 
         end
     end
 
@@ -59,8 +64,8 @@ defmodule Neighbors do
                 end
             end
         end
-
     end
+
     def create_registry("torus",num, max_axis_coord) do
     
         Registry.start_link(keys: :unique, name: Registry.CoordReg)
@@ -71,6 +76,30 @@ defmodule Neighbors do
                     Registry.register(Registry.CoordReg, Kernel.trunc((j*max_axis_coord)+(i*1)), {i,j})
                 end
             end
+    end
+
+    def create_registry("imp2D",remaining, _) when length(remaining)==0 do
+        IO.puts "No more nodes remaining"
+    end
+
+    def create_registry("imp2D",remaining, num) do
+        [node_selected|remaining] = remaining
+        node_selected_neighs = get_neighbors("imp2D",node_selected, num)
+        random_selected = remaining
+        |> Enum.random
+        remaining = List.delete(remaining,random_selected)
+        IO.inspect remaining
+
+        
+        neighs = List.insert_at(node_selected_neighs, -1, random_selected) |> Enum.uniq
+        
+        Registry.register(Registry.NeighReg, node_selected, neighs)
+
+        random_selected_neighs = get_neighbors("imp2D",random_selected, num)
+        neighs = List.insert_at(random_selected_neighs, -1, node_selected) |> Enum.uniq
+        Registry.register(Registry.NeighReg, random_selected, neighs)
+
+        create_registry("imp2D",remaining, num)
     end
 
     def get_neighbors("3d", node, mac) do
@@ -166,7 +195,20 @@ defmodule Neighbors do
 
                 neighbors
     end
- 
+
+    def get_neighbors("imp2D",node, no) do
+        neighs = [] 
+        neighs = 
+        cond do
+            node == 0 -> List.insert_at(neighs, -1, (node+1))
+            node == (no-1) -> List.insert_at(neighs, -1, (node-1))
+            true -> 
+                List.insert_at(neighs, -1, (node+1))
+                |> List.insert_at(-1, (node-1)) 
+        end
+        neighs
+    end
+
 end
 
 defmodule RC do
@@ -179,4 +221,4 @@ defmodule RC do
     defp fixed_point(f, _, tolerance, next), do: fixed_point(f, next, tolerance, f.(next))
 end
 
-Neighbors.main("torus",1000)
+
