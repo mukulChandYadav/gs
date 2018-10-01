@@ -180,6 +180,7 @@ defmodule GS.Neighbors do
                 end
 
                 neighbors
+                |> Enum.uniq
     end
 
     def get_neighbors("torus", node, mac) do
@@ -232,7 +233,8 @@ defmodule GS.Neighbors do
                 end
 
                 neighbors
-    end
+                |> Enum.uniq
+            end
 
     def get_neighbors("imp2D",node, no) do
         neighs = [] 
@@ -279,6 +281,6 @@ defmodule RC do
     defp fixed_point(f, _, tolerance, next), do: fixed_point(f, next, tolerance, f.(next))
 end
 
-GS.Neighbors.main("3D",1000)
-Registry.lookup(Registry.NeighReg, 321) |> IO.inspect
+GS.Neighbors.main("torus",4)
+Registry.lookup(Registry.NeighReg, 0) |> IO.inspect
 # GS.Neighbors.coords_to_node("torus", {1,2}, 10) |> IO.inspect

@@ -23,6 +23,9 @@ defmodule GS.Node do
     case algorithm do
       :gossip ->
         Logger.debug("In gossip")
+        Agent.update(agent, &Map.put(&1, key, value))
+        # TO Check if this agent's map is empty
+        # Agent.update on nodeinfo
 
       :push_sum ->
         Logger.debug("In push sum")
