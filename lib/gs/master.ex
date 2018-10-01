@@ -31,24 +31,24 @@ defmodule GS.Master do
     node_ids = Registry.keys(Registry.NeighReg, self())
     Logger.debug("Prepared node_ids" <> inspect(node_ids))
 
-    node_list = Enum.map( node_ids, fn x ->
-      {:ok, pid} = GS.Node.start_link([topology, algorithm])
-      Registry.register(GS.Registry.NodeInfo, x, %GS.NodeInfo{node_id: x, termination_timestamp: 0, node_state: %{}, node_pid: pid})
-      pid
+    node_info_list = Enum.map(node_ids, fn x ->
+      {:ok, pid} = GS.Node.start_link([x, topology, algorithm])
+      node_info = %GS.NodeInfo{node_id: x, termination_timestamp: 0, node_state: %{}, node_pid: pid}
+      Registry.register(GS.Registry.NodeInfo, x, node_info)
+      node_info
     end)
 
-    Logger.debug("node_list" <> inspect(node_list))
+    Logger.debug("node_list" <> inspect(node_info_list))
 
-    self_pid = self()
+    master_pid = self()
     # Send message to random node
-    
-    Logger.debug("Calling random node")
+
     #TODO: Capture current start timestamp
-    [head|tail] = node_list
-    #TODO: Choose a random node from list to send the message to
-    GS.Node.send_msg(head, self_pid, algorithm, "abc")
 
+    random_seed_node = Enum.random(node_info_list)
+    Logger.debug("Calling random node " <> inspect(random_seed_node.node_pid))
 
+    GS.Node.send_msg(random_seed_node.node_id, master_pid, -1,algorithm, "abc")
     {:ok, %{}}
   end
 
