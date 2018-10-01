@@ -1,4 +1,4 @@
-defmodule Neighbors do
+defmodule GS.Neighbors do
     
     '''
     main
@@ -18,22 +18,22 @@ defmodule Neighbors do
             "3d" -> 
                 max_axis_coord = RC.nth_root(3, num) |> Kernel.trunc
                 possible_num_of_nodes = :math.pow(max_axis_coord,3) |> Kernel.trunc
-                Neighbors.create_registry("3d",possible_num_of_nodes, max_axis_coord)
+                create_registry("3d",possible_num_of_nodes, max_axis_coord)
 
                 Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 for node <- 0..(possible_num_of_nodes-1) do
-                    neighbors = Neighbors.get_neighbors("3d",node, max_axis_coord)
+                    neighbors = get_neighbors("3d",node, max_axis_coord)
                     Registry.register(Registry.NeighReg, node, neighbors)
                 end
 
             "torus" -> 
                 max_axis_coord = RC.nth_root(2, num) |> Kernel.trunc
                 possible_num_of_nodes = :math.pow(max_axis_coord,2) |> Kernel.trunc
-                Neighbors.create_registry("torus",possible_num_of_nodes, max_axis_coord)
+                create_registry("torus",possible_num_of_nodes, max_axis_coord)
 
                 Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 for node <- 0..(possible_num_of_nodes-1) do
-                    neighbors = Neighbors.get_neighbors("torus",node, max_axis_coord)
+                    neighbors = get_neighbors("torus",node, max_axis_coord)
                     Registry.register(Registry.NeighReg, node, neighbors)
                 end
 
@@ -179,4 +179,4 @@ defmodule RC do
     defp fixed_point(f, _, tolerance, next), do: fixed_point(f, next, tolerance, f.(next))
 end
 
-Neighbors.main("torus",1000)
+#Neighbors.main("torus",1000)

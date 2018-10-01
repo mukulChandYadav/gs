@@ -7,9 +7,24 @@ defmodule GS.Node do
   @moduledoc false
 
   def start_link(_opts) do
-    Logger.debug("Inside " <> inspect(__MODULE__))
+    Logger.debug("Inside start_link " <> inspect(__MODULE__))
     Agent.start_link(fn -> %{} end)
   end
+
+  def send_msg(agent, master, msg) do
+    Logger.debug("Received msg: " <> msg <> " for " <> inspect(agent) <> " from master : " <> inspect(self()))
+
+    #TODO: Get neighbors
+    node_ids = Registry.keys(Registry.NeighReg, master)
+    Logger.debug("Node ids: " <> inspect(node_ids))
+    [head | tail] = node_ids
+    GS.Node.send_msg(head, master, "abc")
+    Process.exit(
+      agent,
+      :normal
+    )
+  end
+
 
   @doc """
   Gets a value from the `bucket` by `key`.

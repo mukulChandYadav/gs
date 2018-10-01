@@ -23,7 +23,7 @@ end
 
 ### Windows
      Powershell
-     mix escript.build -and escript.exe gs numNodes topology algorithm
+     mix escript.build ; escript.exe gs numNodes topology algorithm
 
      CMD
      mix escript.build && escript.exe gs numNodes topology algorithm
