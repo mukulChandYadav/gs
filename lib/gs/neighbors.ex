@@ -18,11 +18,11 @@ defmodule GS.Neighbors do
             "3D" -> 
                 max_axis_coord = RC.nth_root(3, num) |> Kernel.trunc
                 possible_num_of_nodes = :math.pow(max_axis_coord,3) |> Kernel.trunc
-                create_registry("3d",possible_num_of_nodes, max_axis_coord)
+                create_registry("3D",possible_num_of_nodes, max_axis_coord)
 
                 Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 for node <- 0..(possible_num_of_nodes-1) do
-                    neighbors = get_neighbors("3d",node, max_axis_coord)
+                    neighbors = get_neighbors("3D",node, max_axis_coord)
                     Registry.register(Registry.NeighReg, node, neighbors)
                 end
 
@@ -55,7 +55,7 @@ defmodule GS.Neighbors do
                 for i <- 0..(num-1) do 
                     remaining++i
                 end
-                IO.inspect remaining
+                # IO.inspect remaining
                 create_registry("line", remaining, num)
             
             "full" -> 
@@ -71,13 +71,13 @@ defmodule GS.Neighbors do
                     Registry.register(Registry.NeighReg, i, neighs)
                 end
 
-            "rand2D" -> 
+            # "rand2D" -> 
 
                 
         end
     end
 
-    def create_registry("3D",num, max_axis_coord) do
+    def create_registry("3D",_, max_axis_coord) do
     
         Registry.start_link(keys: :unique, name: Registry.CoordReg)
         for k <- 0..(max_axis_coord-1) do
@@ -91,7 +91,7 @@ defmodule GS.Neighbors do
         end
     end
 
-    def create_registry("torus",num, max_axis_coord) do
+    def create_registry("torus",_, max_axis_coord) do
     
         Registry.start_link(keys: :unique, name: Registry.CoordReg)
             for j <- 0..(max_axis_coord-1) do
@@ -113,7 +113,7 @@ defmodule GS.Neighbors do
         random_selected = remaining
         |> Enum.random
         remaining = List.delete(remaining,random_selected)
-        IO.inspect remaining
+        # IO.inspect remaining
 
         
         neighs = List.insert_at(node_selected_neighs, -1, random_selected) |> Enum.uniq
@@ -150,32 +150,32 @@ defmodule GS.Neighbors do
                 {i,j,k} = coord
                 neighbors = 
                 case i+1 >= 0 and i+1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i+1,j,k})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i+1,j,k}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case i-1 >= 0 and i-1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i-1,j,k})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i-1,j,k}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j+1 > 0 and j+1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i,j+1,k})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i,j+1,k}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j-1 >= 0 and j-1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i,j-1,k})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i,j-1,k}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case k+1 > 0 and k+1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i,j,k+1})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i,j,k+1}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case k-1 >= 0 and k-1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i,j,k-1})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("3D", {i,j,k-1}, mac))
                     false -> neighbors
                 end
 
@@ -192,42 +192,42 @@ defmodule GS.Neighbors do
                 {i,j} = coord
                 neighbors = 
                 case i+1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i+1,j})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {i+1,j}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case i+1 == mac do
-                    true -> List.insert_at(neighbors, -1, {0,j})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {0,j}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case i-1 >= 0 do
-                    true -> List.insert_at(neighbors, -1, {i-1,j})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {i-1,j}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case i-1 == -1 do
-                    true -> List.insert_at(neighbors, -1, {(mac-1),j})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {(mac-1),j}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j+1 < mac do
-                    true -> List.insert_at(neighbors, -1, {i,j+1})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {i,j+1}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j+1 == mac do
-                    true -> List.insert_at(neighbors,-1,{i,0})
+                    true -> List.insert_at(neighbors,-1,coords_to_node("torus", {i,0}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j-1 >= 0 do
-                    true -> List.insert_at(neighbors, -1, {i,j-1})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {i,j-1}, mac))
                     false -> neighbors
                 end
                 neighbors = 
                 case j-1 == -1 do
-                    true -> List.insert_at(neighbors, -1, {i,(mac-1)})
+                    true -> List.insert_at(neighbors, -1, coords_to_node("torus", {i,(mac-1)}, mac))
                     false -> neighbors
                 end
 
@@ -260,6 +260,13 @@ defmodule GS.Neighbors do
         neighs
     end
 
+    def coords_to_node("torus", coord, mac) do
+        (elem(coord,0) * 1) + (elem(coord,1)*mac)
+    end
+    def coords_to_node("3D", coord, mac) do
+        (elem(coord,0) * 1) + (elem(coord,1)*mac + (elem(coord,2)*:math.pow(mac,2)))
+        |> Kernel.trunc
+    end
 end
 
 defmodule RC do
@@ -272,4 +279,6 @@ defmodule RC do
     defp fixed_point(f, _, tolerance, next), do: fixed_point(f, next, tolerance, f.(next))
 end
 
-# Neighbors.main("torus",1000)
+GS.Neighbors.main("3D",1000)
+Registry.lookup(Registry.NeighReg, 321) |> IO.inspect
+# GS.Neighbors.coords_to_node("torus", {1,2}, 10) |> IO.inspect
