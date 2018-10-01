@@ -179,7 +179,7 @@ defmodule GS.Neighbors do
                     false -> neighbors
                 end
 
-                neighbors
+                neighbors |> Enum.uniq()
     end
 
     def get_neighbors("torus", node, mac) do
@@ -231,7 +231,7 @@ defmodule GS.Neighbors do
                     false -> neighbors
                 end
 
-                neighbors
+                neighbors |> Enum.uniq()
     end
 
     def get_neighbors("imp2D",node, no) do
@@ -244,7 +244,7 @@ defmodule GS.Neighbors do
                 List.insert_at(neighs, -1, (node+1))
                 |> List.insert_at(-1, (node-1)) 
         end
-        neighs
+        neighs |> Enum.uniq()
     end
 
     def get_neighbors("line",node, no) do
@@ -257,7 +257,7 @@ defmodule GS.Neighbors do
                 List.insert_at(neighs, -1, (node+1))
                 |> List.insert_at(-1, (node-1)) 
         end
-        neighs
+        neighs |> Enum.uniq()
     end
 
     def coords_to_node("torus", coord, mac) do
