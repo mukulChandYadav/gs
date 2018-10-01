@@ -1,18 +1,15 @@
 defmodule GS do
+  use Application
+
+  require Logger
+
   @moduledoc """
   Documentation for GS.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> GS.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def start(type, args) do
+    Logger.debug("Inside start " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(args) <> "and type: " <> inspect(type))
+    GS.Supervisor.start_link(args)
   end
+
 end
