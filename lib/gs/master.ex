@@ -32,8 +32,11 @@ defmodule GS.Master do
     Logger.debug("Prepared node_ids" <> inspect(node_ids))
 
     node_info_list = Enum.map(node_ids, fn x ->
-      {:ok, pid} = GS.Node.start_link([x, topology, algorithm])
-      node_info = %GS.NodeInfo{node_id: x, termination_timestamp: 0, node_state: %{}, node_pid: pid}
+      {:ok, agent_node_pid} = GS.Node.start_link([x, algorithm, topology])
+      node_info = %GS.NodeInfo{node_id: x, termination_timestamp: 0, node_state: %{}, node_pid: agent_node_pid}
+      Agent.update(agent_node_pid, fn x -> 
+        %{x | node_pid: agent_node_pid}
+      end)
       Registry.register(GS.Registry.NodeInfo, x, node_info)
       node_info
     end)
