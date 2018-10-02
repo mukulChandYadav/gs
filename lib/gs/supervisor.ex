@@ -10,12 +10,13 @@ defmodule GS.Supervisor do
     Supervisor.start_link(__MODULE__, arg, [])
   end
 
-  def init(arg) do
-    Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(arg))
+  def init(args) do
+    Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(args))
     children = [
-      {GS.Master, name: GS.Master, args: arg}
+      {GS.Master, name: GS.Master, args: args},
+      {GS.Node_failure_instrumentor, name: GS.Node_failure_instrumentor}
     ]
     Supervisor.init(children, strategy: :one_for_one)
-    #supervise(children, strategy: :one_for_one)
+    GenServer.call(GS.Master, {:process, args})
   end
 end

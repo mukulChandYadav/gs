@@ -7,7 +7,7 @@ defmodule GS.Node do
   @moduledoc false
 
   def start_link(opts) do
-    Logger.debug("Inside start_link " <> inspect(__MODULE__) <> " with options: " <> inspect(opts))
+    #Logger.debug("Inside start_link " <> inspect(__MODULE__) <> " with options: " <> inspect(opts))
     #TODO: Add node info here
     [head|tail] = opts
     agent_id = head
@@ -21,16 +21,16 @@ defmodule GS.Node do
         "push_sum" ->
           %GS.NodeInfo{node_id: agent_id, termination_timestamp: 0, node_state: %{s: agent_id + 1, w: 1, count: 0}, node_pid: -1}
       end
-    Logger.debug("Inside start_link agent node info " <> inspect(agent_node_info) )
+    #Logger.debug("Inside start_link agent node info " <> inspect(agent_node_info) )
     Agent.start_link(fn -> agent_node_info end)
   end
 
   def send_msg(agent_id, master_pid, algorithm, msg) do
 
     #Logger.debug("Received msg: " <> msg <> " for " <> inspect(agent_id) <> " with master : "<> inspect(master_pid) <> " from : "<> inspect(_from) <> " to: " <> inspect(self()))
-    Logger.debug("Received msg: " <> inspect(msg) <> " for " <> inspect(agent_id) <> " with master : "<> inspect(master_pid) <>" to: " <> inspect(self()))
+    #Logger.debug("Received msg: " <> inspect(msg) <> " for " <> inspect(agent_id) <> " with master : "<> inspect(master_pid) <>" to: " <> inspect(self()))
     [{_, this_node_info}] = Registry.lookup(GS.Registry.NodeInfo, agent_id)
-    Logger.debug("Info for this node" <> inspect(this_node_info))
+    #Logger.debug("Info for this node" <> inspect(this_node_info))
 
     [{_, neighbors}] = Registry.lookup(Registry.NeighReg, agent_id)
     #Logger.debug("Neighbors for this node" <> inspect(neighbors))
@@ -56,15 +56,15 @@ defmodule GS.Node do
           this_node_info = Agent.get(this_node_info.node_pid, fn x -> x end)
           this_node_state = this_node_info.node_state
 
-          Logger.debug("This node state" <> inspect(this_node_state))
+          #Logger.debug("This node state" <> inspect(this_node_state))
           count = Map.get(this_node_state, :count)
-          Logger.debug("Count:" <> inspect(count))
+          #Logger.debug("Count:" <> inspect(count))
 
           if count == 10 do
-            Logger.debug("Count equals 10. Returning" <> inspect(count))
+            #Logger.debug("Count equals 10. Returning" <> inspect(count))
             [true, %{}]
           else
-            Logger.debug("Buzz Count ne 10. Returning" <> inspect(count))
+            #Logger.debug("Buzz Count ne 10. Returning" <> inspect(count))
             count = count + 1
             updated_map = Map.put(this_node_state, :count, count)
             Agent.update(this_node_info.node_pid, fn x ->
@@ -73,17 +73,17 @@ defmodule GS.Node do
             #TODO Has todo remove
             this_node_info = Agent.get(this_node_info.node_pid, fn x -> x end)
             this_node_state = this_node_info.node_state
-            Logger.debug("This node state" <> inspect(this_node_state))
+            #Logger.debug("This node state" <> inspect(this_node_state))
 
             [false, %{}]
           end
 
 
         "push_sum" ->
-          Logger.debug("In push sum")
+          #Logger.debug("In push sum")
           this_node_info = Agent.get(this_node_info.node_pid, fn x -> x end)
           this_node_state = this_node_info.node_state
-          Logger.debug("This node state" <> inspect(this_node_state))
+          #Logger.debug("This node state" <> inspect(this_node_state))
 
           s = Map.get(this_node_state, :s)
           w = Map.get(this_node_state, :w)
@@ -96,46 +96,42 @@ defmodule GS.Node do
 
           old_sum_est = s/w
           new_sum_est = new_s/new_w
-          Logger.debug("new s,w : " <> inspect(new_s) <> " "<>inspect(new_w) )
+          #Logger.debug("new s,w : " <> inspect(new_s) <> " "<>inspect(new_w) )
 
           diff = abs(old_sum_est - new_sum_est)
-          Logger.debug("Diff : " <> inspect(diff))
+          #Logger.debug("Diff : " <> inspect(diff))
 
           count  =
             if diff < :math.pow(10, -10) do
-              Logger.debug("Diff lesser than threshold: " <> inspect(diff))
+              #Logger.debug("Diff lesser than threshold: " <> inspect(diff))
               Map.get(this_node_state, :count) + 1
             else
               0
             end
 
           if count == 3 do
-            Logger.debug("Count reached 3 for: " <> inspect(this_node_info))
+            #Logger.debug("Count reached 3 for: " <> inspect(this_node_info))
             [true, %{s: new_s/2, w: new_w/2}]
           else
-            Logger.debug("To be updated vals: c: "<> inspect(count) <> "s: " <>inspect(new_s / 2)<> " w: " <>inspect(new_w / 2))
+            #Logger.debug("To be updated vals: c: "<> inspect(count) <> "s: " <>inspect(new_s / 2)<> " w: " <>inspect(new_w / 2))
             updated_map = Map.put(this_node_state, :count, count)
-            Logger.debug(" updated map c"<> inspect(updated_map))
+            #Logger.debug(" updated map c"<> inspect(updated_map))
             updated_map = Map.put(updated_map, :s, new_s / 2)
-            Logger.debug(" updated map s"<> inspect(updated_map))
+            #Logger.debug(" updated map s"<> inspect(updated_map))
             updated_map = Map.put(updated_map, :w, new_w / 2)
-            Logger.debug(" updated map w"<> inspect(updated_map))
+            #Logger.debug(" updated map w"<> inspect(updated_map))
             Agent.update(this_node_info.node_pid, fn x ->
               abc  = %{x | node_state: updated_map}
-              Logger.debug(" updated node info "<> inspect(abc))
+              #Logger.debug(" updated node info "<> inspect(abc))
               abc
             end)
-            #TODO Has todo remove
-            this_node_info = Agent.get(this_node_info.node_pid, fn x -> x end)
-            this_node_state = this_node_info.node_state
-            Logger.debug("Updated node state" <> inspect(this_node_state))
 
             [false, %{s: new_s/2, w: new_w/2}]
           end
       end
 
     if should_terminate do
-      Logger.debug("Terminating node id - " <> inspect(agent_id) <> " pid - " <> inspect(this_node_info.node_pid))
+      #Logger.debug("Terminating node id - " <> inspect(agent_id) <> " pid - " <> inspect(this_node_info.node_pid))
 
       Process.unlink(this_node_info.node_pid)
       Agent.stop(this_node_info.node_pid)
