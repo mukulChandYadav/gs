@@ -96,6 +96,7 @@ defmodule GS.Node do
 
           old_sum_est = s/w
           new_sum_est = new_s/new_w
+          Logger.debug("new s,w : " <> inspect(new_s) <> " "<>inspect(new_w) )
 
           diff = abs(old_sum_est - new_sum_est)
           Logger.debug("Diff : " <> inspect(diff))
@@ -110,13 +111,19 @@ defmodule GS.Node do
 
           if count == 3 do
             Logger.debug("Count reached 3 for: " <> inspect(this_node_info))
-            [true, %{}]
+            [true, %{s: new_s/2, w: new_w/2}]
           else
+            Logger.debug("To be updated vals: c: "<> inspect(count) <> "s: " <>inspect(new_s / 2)<> " w: " <>inspect(new_w / 2))
             updated_map = Map.put(this_node_state, :count, count)
-            updated_map = Map.put(this_node_state, :s, new_s/2)
-            updated_map = Map.put(this_node_state, :w, new_w/2)
+            Logger.debug(" updated map c"<> inspect(updated_map))
+            updated_map = Map.put(updated_map, :s, new_s / 2)
+            Logger.debug(" updated map s"<> inspect(updated_map))
+            updated_map = Map.put(updated_map, :w, new_w / 2)
+            Logger.debug(" updated map w"<> inspect(updated_map))
             Agent.update(this_node_info.node_pid, fn x ->
-              %{x | node_state: updated_map}
+              abc  = %{x | node_state: updated_map}
+              Logger.debug(" updated node info "<> inspect(abc))
+              abc
             end)
             #TODO Has todo remove
             this_node_info = Agent.get(this_node_info.node_pid, fn x -> x end)
@@ -127,23 +134,15 @@ defmodule GS.Node do
           end
       end
 
-    #Logger.debug(" Chosen neighbor id" <> inspect(chosen_neighbor_node_info.node_id))
-
-    #Logger.debug(" This node " <> inspect(this_node_info.node_id) <> " with count: " <> inspect(this_node_info.node_state) <> " should terminate : " <> inspect(should_terminate))
-
     if should_terminate do
       Logger.debug("Terminating node id - " <> inspect(agent_id) <> " pid - " <> inspect(this_node_info.node_pid))
-      #TODO: Communicate to master about it's exit
 
       Process.unlink(this_node_info.node_pid)
       Agent.stop(this_node_info.node_pid)
-      #Process.exit(
-       # this_node_info.node_pid,
-        #:normal
-      #)
-    end
 
-    GS.Node.send_msg(chosen_neighbor_node_info.node_id, master_pid, algorithm, msg)
+    else
+      GS.Node.send_msg(chosen_neighbor_node_info.node_id, master_pid, algorithm, msg)
+    end
 
     rescue
       Enum.EmptyError ->
