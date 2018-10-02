@@ -7,12 +7,16 @@ defmodule GS.Master do
 
   def start_link(opts) do
     Logger.debug("Inside start_link " <> inspect(__MODULE__) <> " " <> "with options: " <> inspect(opts))
-    GenServer.start_link(__MODULE__, opts)
+    GenServer.start_link(__MODULE__, :ok,  opts)
   end
 
   def init(opts) do
+    {:ok, %{}}
+  end
+
+  def handle_call({:process, opts}, _from, state) do
     Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with options: " <> inspect(opts))
-    commandline_arg = opts[:args]
+    commandline_arg = opts
 
     Logger.debug("commmand line_arg" <> inspect(commandline_arg))
     [head | tail] = commandline_arg
@@ -76,11 +80,6 @@ defmodule GS.Master do
 
     time_interval = end_timestamp - start_timestamp
     Logger.info("Time taken: "<> inspect(time_interval) <>"ms")
-
-    {:ok, %{time: time_interval}}
-  end
-
-  def handle_call(_msg, _from, state) do
     {:reply, :ok, state}
   end
 
