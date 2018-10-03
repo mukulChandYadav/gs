@@ -23,10 +23,14 @@ end
 
 ### Windows
      Powershell
-     mix escript.build ; escript.exe gs numNodes topology algorithm
+     mix escript.build ; escript.exe gs <numNodes> <topology> <algorithm> <num_kill_nodes> <kill_type>
 
      CMD
      mix escript.build && escript.exe gs numNodes topology algorithm
+
+     For e.g. mix compile; mix escript.build ;  escript.exe gs 1000 full gossip 20 :normal
+
+<kill_type> argument can be :normal for expected shutdown and :kill for unexpected failure simulation
 
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
