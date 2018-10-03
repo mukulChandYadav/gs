@@ -87,8 +87,8 @@ defmodule GS.Master do
 
     time_interval = end_timestamp - start_timestamp
     IO.puts("Time taken: #{inspect time_interval}ms")
-    #{:reply, :ok, state}
-    {:noreply,  state}
+    {:reply, :ok, state}
+    #{:noreply,  state}
   end
 
   defp wait_for_convergence(last_timestamp) do
@@ -114,57 +114,5 @@ defmodule GS.Master do
   def handle_cast(_msg, state) do
     {:noreply, state}
   end
-
-
-
-  #  defp wait_for_messages_to_complete(last_timestamp) do
-  #
-  #    receive do
-  #    after
-  #      5_000 ->
-  #        last_beacon_ts = get_beacon_timestamp()
-  #        Logger.info("Timestamps: last- " <> inspect(last_timestamp) <> " beacon-" <> inspect(last_beacon_ts))
-  #        if(last_timestamp >= last_beacon_ts) do
-  #          Logger.info("No message passing in a while. Assuming network to be dormant.")
-  #        else
-  #          wait_for_messages_to_complete(last_beacon_ts)
-  #        end
-  #    end
-  #
-  #
-  #    #    Process.sleep(5000)
-  #    #    last_beacon_ts = get_beacon_timestamp()
-  #    #    Logger.info("Timestamps: last- " <> inspect(last_timestamp) <> " beacon-" <> inspect(last_beacon_ts))
-  #    #    if(last_timestamp >= last_beacon_ts) do
-  #    #      Logger.info("No message passing in a while. Assuming network to be dormant.")
-  #    #    else
-  #    #      wait_for_messages_to_complete(last_beacon_ts)
-  #    #    end
-  #  end
-
-  #  def handle_call({:stop, node_pid}, _from, state) do
-  #    Logger.debug("received beacon message to stop " <> inspect(:os.system_time(:millisecond)))
-  #    Process.unlink(node_pid)
-  #    if Process.alive? node_pid do
-  #      GenServer.stop(node_pid, :normal)
-  #    else
-  #      Logger.warn("Process id: #{inspect node_pid} already dead")
-  #    end
-  #
-  #    {:reply, :ok, state}
-  #  end
-
-
-  #  def handle_cast({:stop, node_pid}, state) do
-  #    #Logger.debug("received beacon message " <> inspect(:os.system_time(:millisecond)))
-  #    Process.unlink(node_pid)
-  #    if Process.alive? node_pid do
-  #      GenServer.stop(node_pid, :normal)
-  #    else
-  #      Logger.warn("Process id: #{inspect node_pid} already dead")
-  #    end
-  #
-  #    {:noreply, state}
-  #  end
 
 end
