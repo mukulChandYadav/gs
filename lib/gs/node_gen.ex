@@ -157,11 +157,10 @@ defmodule GS.NodeGen do
             updated_map = Map.put(updated_map, :w, new_w / 2)
             ####Logger.debug(" updated map w"<> inspect(updated_map))
             x = get_state self
-            GenServer.call(this_node_info.node_pid, {:update, %{x | node_state: updated_map}})
-            #TODO Has todo remove
-            this_node_info = get_state self
-            this_node_state = this_node_info.node_state
-            ####Logger.debug("Updated node state" <> inspect(this_node_state))
+            update_state(this_node_info.node_pid, %{x | node_state: updated_map})
+            #            this_node_info = get_state self
+            #            this_node_state = this_node_info.node_state
+            #            ####Logger.debug("Updated node state" <> inspect(this_node_state))
 
             [false, %{s: new_s / 2, w: new_w / 2}]
           end
@@ -186,20 +185,24 @@ defmodule GS.NodeGen do
       Enum.EmptyError ->
         Logger.debug("No alive neighbor found for #{inspect this_node_info.node_id}")
       MatchError ->
-        Logger.debug("No entries found in registry #{inspect MatchError} for node#{inspect this_node_info.node_id}")
+        Logger.debug("No entries found in registry #{inspect MatchError} for node #{inspect this_node_info.node_id}")
     end
     if should_terminate do
       Logger.debug("Terminating node id - #{inspect this_node_info.node_id}  pid - #{inspect(this_node_info.node_pid)} at #{:os.system_time(:millisecond)}}")
       Logger.debug "Last beacon captured #{inspect Registry.lookup(GS.Registry.Beacon, :c)}"
+      #send(this_node_info.node_pid, :stop_node)
       {:stop, :normal, state}
       #{:noreply, state}
-      #GenServer.call(GS.Master, {:stop,this_node_info.node_pid})
     else
       {:noreply, state}
     end
 
   end
 
+  def handle_info(:stop_node, state) do
+    Logger.debug "Received message to stop node #{inspect self}"
+    {:stop, :normal, state}
+  end
 
 end
 
