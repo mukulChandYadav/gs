@@ -72,7 +72,6 @@ defmodule GS.Neighbors do
                 end
 
             "rand2D" -> 
-                max_axis_coord = 1.0
                 create_registry("rand2D", num)
                 
         end
@@ -339,10 +338,4 @@ defmodule RC do
 end
 
 # GS.Neighbors.main("rand2D",10000)
-# Registry.lookup(Registry.NeighReg, 321) |> IO.inspect
-# GS.Neighbors.coords_to_node("torus", {1,2}, 10) |> IO.inspect
-# GS.Neighbors.within_distance(MapSet.new([{0.1,0.1}, {0.13,0.13}]), {0.11,0.11}) |> IO.inspect
-# GS.Neighbors.create_registry("rand2D", 10, 1.0)
-# Registry.start_link(keys: :unique, name: Registry.CoordReg)
-# Registry.start_link(keys: :unique, name: Registry.NeighReg)
 # GS.Neighbors.lookitup()
