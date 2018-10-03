@@ -20,7 +20,7 @@ defmodule GS.Neighbors do
                 possible_num_of_nodes = :math.pow(max_axis_coord,3) |> Kernel.trunc
                 create_registry("3D",possible_num_of_nodes, max_axis_coord)
 
-                Registry.start_link(keys: :unique, name: Registry.NeighReg)
+                #Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 for node <- 0..(possible_num_of_nodes-1) do
                     neighbors = get_neighbors("3D",node, max_axis_coord)
                     Registry.register(Registry.NeighReg, node, neighbors)
@@ -31,7 +31,7 @@ defmodule GS.Neighbors do
                 possible_num_of_nodes = :math.pow(max_axis_coord,2) |> Kernel.trunc
                 create_registry("torus",possible_num_of_nodes, max_axis_coord)
 
-                Registry.start_link(keys: :unique, name: Registry.NeighReg)
+                #Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 for node <- 0..(possible_num_of_nodes-1) do
                     neighbors = get_neighbors("torus",node, max_axis_coord)
                     Registry.register(Registry.NeighReg, node, neighbors)
@@ -39,7 +39,7 @@ defmodule GS.Neighbors do
 
             "imp2D" ->
                 num = if rem(num,2)==0, do: num, else: (num-1)
-                Registry.start_link(keys: :unique, name: Registry.NeighReg) 
+                #Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 randoms_remaining = []
                 randoms_remaining = 
                 for i <- 0..(num-1) do 
@@ -49,7 +49,7 @@ defmodule GS.Neighbors do
                 create_registry("imp2D", randoms_remaining, num)
 
             "line" ->
-                Registry.start_link(keys: :unique, name: Registry.NeighReg) 
+                #Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 remaining = []
                 remaining = 
                 for i <- 0..(num-1) do 
@@ -59,7 +59,7 @@ defmodule GS.Neighbors do
                 create_registry("line", remaining, num)
             
             "full" -> 
-                Registry.start_link(keys: :unique, name: Registry.NeighReg) 
+                #Registry.start_link(keys: :unique, name: Registry.NeighReg)
                 nodes = []
                 nodes = 
                 for i <- 0..(num-1) do 
@@ -143,7 +143,7 @@ defmodule GS.Neighbors do
 
     def create_registry("rand2D", nodes, max_axis_coord) do
         Registry.start_link(keys: :unique, name: Registry.CoordReg)
-        Registry.start_link(keys: :unique, name: Registry.NeighReg)
+        #Registry.start_link(keys: :unique, name: Registry.NeighReg)
         node_coords = generate_mapset(MapSet.new(), nodes, 0, 0)
     end
 

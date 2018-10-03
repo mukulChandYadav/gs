@@ -13,13 +13,18 @@ defmodule GS.Master do
   def init(opts) do
 
     # Create node registry <node_id, node_info>
-    Registry.start_link(keys: :unique, name: GS.Registry.NodeInfo)
-    Registry.start_link(keys: :unique, name: GS.Registry.NodeIdToPid)
+    #Registry.start_link(keys: :unique, name: GS.Registry.NodeInfo)
+    #Registry.start_link(keys: :unique, name: GS.Registry.NodeIdToPid)
+    #send(self, {:process, opts})
     {:ok, %{}}
   end
 
+  def start_nodes(args) do
+    GenServer.call(GS.Master, {:process, args}, :infinity)
+  end
 
   def handle_call({:process, opts}, _from, state) do
+  #def handle_cast({:process, opts}, state) do
     #Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with options: " <> inspect(opts))
     commandline_arg = opts
 
@@ -31,6 +36,13 @@ defmodule GS.Master do
     [head | tail] = tail
     algorithm = head
 
+    [head | tail] = tail
+    num_kill_nodes = String.to_integer(head)
+
+    [head | tail] = tail
+    num_kill_type = head
+
+
     Logger.debug "command line_arg nodes - #{inspect num_nodes}  topology -  #{inspect topology} algorithm - #{inspect algorithm} "
 
     # Populate neighbor registry
@@ -41,7 +53,7 @@ defmodule GS.Master do
     node_info_list = Enum.map(
       node_ids,
       fn x ->
-        {:ok, agent_node_pid} = GS.NodeGen.start_link([x, algorithm, topology])
+        {:ok, agent_node_pid} = DynamicSupervisor.start_child(GS.NodeSupervisor, {GS.NodeGen, [x, algorithm, topology]})
         #Logger.debug("" <> inspect(__MODULE__) <> " node pid " <> inspect(agent_node_pid))
         node_info = GenServer.call(agent_node_pid, :get)
         node_info
@@ -68,12 +80,15 @@ defmodule GS.Master do
     '''
     GenServer.cast(random_seed_node.node_pid, {:process, msg, master_pid, algorithm})
 
+    GenServer.cast(GS.Node_failure_instrumentor, %{master_pid: master_pid, num_nodes: num_kill_nodes, type: num_kill_type, total_nodes: num_nodes})
+
     wait_for_convergence(start_timestamp)
     end_timestamp = get_beacon_timestamp()
 
     time_interval = end_timestamp - start_timestamp
     IO.puts("Time taken: #{inspect time_interval}ms")
-    {:reply, :ok, state}
+    #{:reply, :ok, state}
+    {:noreply,  state}
   end
 
   defp wait_for_convergence(last_timestamp) do

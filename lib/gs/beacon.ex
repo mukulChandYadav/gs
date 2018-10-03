@@ -10,7 +10,7 @@ defmodule GS.Beacon do
   end
 
   def init(_opts) do
-    Registry.start_link(keys: :duplicate, name: GS.Registry.Beacon)
+    #Registry.start_link(keys: :duplicate, name: GS.Registry.Beacon)
     Registry.register(GS.Registry.Beacon, :c, :os.system_time(:millisecond))
     Logger.debug("#{inspect __MODULE__} get beacon ts #{inspect(Registry.lookup(GS.Registry.Beacon, :c))}")
     {:ok, %{}}
