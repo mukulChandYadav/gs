@@ -73,7 +73,7 @@ defmodule GS.Neighbors do
 
             "rand2D" -> 
                 max_axis_coord = 1.0
-                create_registry("rand2D", num, max_axis_coord)
+                create_registry("rand2D", num)
                 
         end
     end
@@ -140,72 +140,57 @@ defmodule GS.Neighbors do
 
         create_registry("line",remaining, num)
     end
-
-    def create_registry("rand2D", nodes, max_axis_coord) do
+    
+    def create_registry("rand2D",num) do
         Registry.start_link(keys: :unique, name: Registry.CoordReg)
         Registry.start_link(keys: :unique, name: Registry.NeighReg)
-        node_coords = generate_mapset(MapSet.new(), nodes, 0, 0)
-    end
+        Enum.each(0..(num-1), fn node_id -> 
+            Registry.register(Registry.CoordReg, get_random(), node_id)
+        end)
 
-    def generate_mapset(coord_set, num_nodes, size, node_id) when size == num_nodes do
-        IO.inspect "MapSet filled"
-    end
-    def generate_mapset(coord_set, num_nodes, size, node_id) when size == 0 do
-        x = :rand.uniform()
-        y = :rand.uniform()
-        coord_set = MapSet.put(coord_set, {x,y})
-        Registry.register(Registry.CoordReg, {x,y}, 0)
-        Registry.register(Registry.NeighReg, 0, [])
-        generate_mapset(coord_set, num_nodes, MapSet.size(coord_set), 0)
-    end
-    def generate_mapset(coord_set, num_nodes, size, node_id) do
-        coords = get_random()
-        # Logger.debug("Coord set: " <> inspect(coord_set))
-        # Logger.debug("Random Coords: " <> inspect(coords))
-        neighs = within_distance(coord_set, coords)                  
+        coords_in_reg = Registry.keys(Registry.CoordReg, self())
 
-        if length(neighs) != 0 do
-            coord_set = MapSet.put(coord_set, coords)
-            Registry.register(Registry.CoordReg, coords, node_id + 1) 
-            # Registry.lookup(Registry.CoordReg, node_id + 1)
-            # Registry.lookup(Registry.CoordReg, node_id)
+        Enum.each(coords_in_reg, fn coord ->
+            [{_, current_node_id}] = Registry.lookup(Registry.CoordReg, coord)
+            # Logger.debug("current node id: " <> inspect(current_node_id))
+            # Logger.debug("current node id lookup: " <> inspect(Registry.lookup(Registry.CoordReg, coord)))
+            
+            other_coords_in_reg = List.delete(coords_in_reg, coord) 
+            # Logger.debug("Other coords in reg: " <> inspect(other_coords_in_reg))
 
-            neighbor_node_ids = Enum.map(neighs, fn neighbor -> 
-                # Logger.debug("Neighbor: " <> inspect(neighbor))
-                # Logger.debug("LOOKUP: " <> inspect(Registry.lookup(Registry.CoordReg, neighbor)))
-                [{_,neighbor_node_id}] = Registry.lookup(Registry.CoordReg, neighbor)
-                Logger.debug("Neighbor: " <> inspect(neighbor_node_id))
-                Logger.debug("lookup: " <> inspect(Registry.lookup(Registry.NeighReg, neighbor_node_id)))
-                [{_,neighbor_nodes_neighbor}] = Registry.lookup(Registry.NeighReg, neighbor_node_id)
-                Logger.debug("Neighbor nodes neighbor: " <> inspect(neighbor_nodes_neighbor))
-                Registry.unregister(Registry.NeighReg, neighbor_node_id)
-                neighbor_nodes_neighbor = List.insert_at(neighbor_nodes_neighbor, -1, node_id + 1)
-                Registry.register(Registry.NeighReg, neighbor_node_id, neighbor_nodes_neighbor)
-                neighbor_nodes_neighbor
+            neighs = 
+            Enum.filter(other_coords_in_reg, fn other_coord -> 
+                calculate_distance(coord, other_coord) < 0.1 
             end)
-            node_ids = Enum.uniq(List.flatten(neighbor_node_ids)) 
-            Registry.register(Registry.NeighReg, node_id + 1, node_ids)
-            Logger.debug("Neighbor node idss: " <> inspect(node_ids))
-            generate_mapset(coord_set, num_nodes, MapSet.size(coord_set), node_id + 1)
-        else
-            generate_mapset(coord_set, num_nodes, MapSet.size(coord_set), node_id)
-        end
+            # Logger.debug("Neighs filter list: " <> inspect(neighs))
+
+            neighs = 
+            if length(neighs) == 0 do 
+                List.insert_at(neighs, -1, coord)
+            else
+                neighs
+            end
+
+            neigh_node_ids = 
+            Enum.map(neighs, fn neigh_coord -> 
+                [{_,neigh_node_id}] = Registry.lookup(Registry.CoordReg, neigh_coord)
+                # Logger.debug("Neigh node id: " <> inspect(neigh_node_id))
+                # Logger.debug("Neigh node id lookup: " <> inspect(Registry.lookup(Registry.CoordReg, neigh_coord)))
+                neigh_node_id
+            end)
+
+            # Logger.debug("Neigh node ids: " <> inspect(neigh_node_ids))
+            Registry.register(Registry.NeighReg, current_node_id, neigh_node_ids)
+        end)
     end
+    def calculate_distance({x1,y1}, {x2,y2}) do
+        :math.sqrt(:math.pow(x1 - x2, 2) + :math.pow(y1 - y2, 2))
+    end
+
     def get_random() do
         {:rand.uniform(), :rand.uniform()}
     end
-    def within_distance(set, coords) do
-        neighs = Enum.filter(set, fn set_coord -> 
-            {x,y} = set_coord
-            {x_gen, y_gen} = coords
-            d = :math.sqrt(:math.pow((x-x_gen),2) + (:math.pow((y-y_gen),2)))
-            # Logger.debug("Distance: " <> inspect(d))
-            d <= 0.1
-        end)
-        # Logger.debug("Neighbors of random: " <> inspect(neighs))
-        neighs
-    end
-
+    
 
     def get_neighbors("3D", node, mac) do
         
@@ -337,7 +322,8 @@ defmodule GS.Neighbors do
 
     def lookitup() do
         for i <- 1..100 do
-            Registry.lookup(Registry.NeighReg, i) |> IO.inspect
+            # [{_,list}]  = Registry.lookup(Registry.NeighReg, i)
+            Logger.debug("length: " <> inspect(Registry.lookup(Registry.NeighReg, i)))
         end
     end
 end
@@ -352,9 +338,11 @@ defmodule RC do
     defp fixed_point(f, _, tolerance, next), do: fixed_point(f, next, tolerance, f.(next))
 end
 
-# GS.Neighbors.main("3D",1000)
+# GS.Neighbors.main("rand2D",10000)
 # Registry.lookup(Registry.NeighReg, 321) |> IO.inspect
 # GS.Neighbors.coords_to_node("torus", {1,2}, 10) |> IO.inspect
 # GS.Neighbors.within_distance(MapSet.new([{0.1,0.1}, {0.13,0.13}]), {0.11,0.11}) |> IO.inspect
 # GS.Neighbors.create_registry("rand2D", 10, 1.0)
+# Registry.start_link(keys: :unique, name: Registry.CoordReg)
+# Registry.start_link(keys: :unique, name: Registry.NeighReg)
 # GS.Neighbors.lookitup()
