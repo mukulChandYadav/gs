@@ -22,14 +22,35 @@ end
     mix escript.build && ./gs numNodes topology algorithm
 
 ### Windows
+
      Powershell
      mix escript.build ; escript.exe gs numNodes topology algorithm
 
      CMD
      mix escript.build && escript.exe gs numNodes topology algorithm
 
-
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/gs](https://hexdocs.pm/gs).
 
+## Project Details:
+
+---
+
+### Team members
+
+Mukul Chand Yadav
+UFID: 7585 9623
+
+Jay Patel
+UFID: 4145 1618
+
+---
+
+Implemented All the topologies and algorithms
+
+---
+
+The largest network of nodes was 10^6 nodes (1 million nodes) for every topology and algorithms
+
+---
