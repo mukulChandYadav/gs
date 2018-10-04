@@ -34,7 +34,7 @@ defmodule GS.NodeGen do
             node_id: x,
             termination_timestamp: 0,
             node_state: %{
-              s: x + 1,
+              s: 1,
               w: 1,
               count: 0
             },
@@ -82,7 +82,7 @@ defmodule GS.NodeGen do
     ##Logger.debug("Received msg: " <> inspect(msg) <> " for " <> inspect(self()) <> " with master : " <> inspect(master_pid) <> " to: " <> inspect(self()) <> " with state: " <> inspect(state))
 
     [{_, this_node_info}] = Registry.lookup(GS.Registry.NodeInfo, self)
-    #Logger.debug("Info for this node" <> inspect(this_node_info))
+    Logger.debug("Info for this node" <> inspect(this_node_info))
 
     [{_, neighbors}] = Registry.lookup(Registry.NeighReg, this_node_info.node_id)
     ######Logger.debug("Neighbors for this node" <> inspect(neighbors))
@@ -180,7 +180,7 @@ defmodule GS.NodeGen do
                                   )
                                   |> Enum.filter(fn x -> Process.alive?(x.node_pid) end)
                                   |> Enum.random()
-      #Logger.debug("Next chosen neighbor for #{inspect this_node_info.node_id} is #{inspect chosen_neighbor_node_info.node_id}")
+      Logger.debug("Next chosen neighbor for #{inspect this_node_info.node_id} is #{inspect chosen_neighbor_node_info.node_id}")
       GenServer.cast(chosen_neighbor_node_info.node_pid, {:process, msg, master_pid, algorithm})
 
     rescue
@@ -192,8 +192,8 @@ defmodule GS.NodeGen do
         Logger.debug("No entries found in registry #{inspect MatchError} for node #{inspect this_node_info.node_id}")
     end
     if should_terminate do
-      #Logger.debug("Terminating node id - #{inspect this_node_info.node_id}  pid - #{inspect(this_node_info.node_pid)} at #{:os.system_time(:millisecond)}}")
-      #Logger.debug "Last beacon captured #{inspect Registry.lookup(GS.Registry.Beacon, :c)}"
+      Logger.debug("Terminating node id - #{inspect this_node_info.node_id}  pid - #{inspect(this_node_info.node_pid)} at #{:os.system_time(:millisecond)}}")
+      Logger.debug "Last beacon captured #{inspect Registry.lookup(GS.Registry.Beacon, :c)}"
       #send(this_node_info.node_pid, :stop_node)
       {:stop, :normal, state}
       #{:noreply, state}

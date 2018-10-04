@@ -62,8 +62,9 @@ defmodule GS.Master do
     #Logger.debug("node_list" <> inspect(node_info_list))
     master_pid = self()
     # Send message to random node
+    :rand.seed(:exsplus, {11, 12, 13})
     random_seed_node = Enum.random(node_info_list)
-    #Logger.debug("Calling random node " <> inspect(random_seed_node.node_pid))
+    Logger.debug("Calling random node " <> inspect(random_seed_node.node_pid))
     msg =
       case algorithm do
         "gossip" ->
@@ -74,6 +75,7 @@ defmodule GS.Master do
       end
 
     start_timestamp = :os.system_time(:millisecond)
+    Logger.debug("Start ts - #{start_timestamp}")
 
     '''
       Initiate seed node message
