@@ -6,16 +6,22 @@ defmodule GS.Supervisor do
   require Logger
 
   def start_link(arg) do
-    Logger.debug("Inside start_link " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(arg))
     Supervisor.start_link(__MODULE__, arg, [])
   end
 
-  def init(arg) do
-    Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(arg))
+  def init(args) do
+    #Logger.debug("Inside init " <> inspect(__MODULE__) <> " " <> "with args: " <> inspect(args))
     children = [
-      {GS.Master, name: GS.Master, args: arg}
+      {Registry, keys: :unique, name: GS.Registry.NodeInfo},
+      {Registry, keys: :unique, name: GS.Registry.NodeIdToPid},
+      {Registry, keys: :unique, name: GS.Registry.Beacon},
+      {Registry, keys: :unique, name: Registry.NeighReg},
+      {GS.Beacon, name: GS.Beacon},
+      {GS.Master, name: GS.Master, args: args},
+      {DynamicSupervisor, name: GS.NodeSupervisor, strategy: :one_for_one},
+
+      {GS.Node_failure_instrumentor, name: GS.Node_failure_instrumentor}
     ]
     Supervisor.init(children, strategy: :one_for_one)
-    #supervise(children, strategy: :one_for_one)
   end
 end

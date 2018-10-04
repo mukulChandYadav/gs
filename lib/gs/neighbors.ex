@@ -14,6 +14,8 @@ defmodule GS.Neighbors do
   '''
 
   def main(topology, num) do
+    past = DateTime.utc_now()
+
     case topology do
       "3D" ->
         max_axis_coord = RC.nth_root(3, num) |> Kernel.trunc()
@@ -79,6 +81,10 @@ defmodule GS.Neighbors do
 
       "rand2D" ->
         create_registry("rand2D", num)
+
+        Logger.debug(
+          "Time to execute: " <> inspect(DateTime.diff(DateTime.utc_now(), past, :millisecond))
+        )
     end
   end
 
