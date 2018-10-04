@@ -27,7 +27,7 @@ defmodule GS.Node_failure_instrumentor do
           :normal
 
         ":kill" ->
-          :kill
+          :shutdown
       end
 
 
@@ -35,17 +35,23 @@ defmodule GS.Node_failure_instrumentor do
       :rand.seed(:exsplus, {101, 102, 103})
       total_node_ids = Enum.map(0..total_nodes - 1, fn x -> x end)
       for x <- 1..num_kill_nodes do
-        rand_pos = Enum.random(1..length(total_node_ids)-1)
+        rand_pos = Enum.random(1..length(total_node_ids) - 1)
         {node_id, total_node_ids} = List.pop_at(total_node_ids, rand_pos)
-        #Logger.debug("Kill node id - #{inspect node_id} at #{inspect total_node_ids} at pos #{rand_pos}")
-        [{_, node_pid}] = Registry.lookup(GS.Registry.NodeIdToPid, node_id)
-        #Logger.debug("Kill node id - #{inspect node_id} pid - #{inspect node_pid}")
-        Process.exit(node_pid, type)
+        try do
+          #Logger.debug("Kill node id - #{inspect node_id} at #{inspect total_node_ids} at pos #{rand_pos}")
+          [{_, node_pid}] = Registry.lookup(GS.Registry.NodeIdToPid, node_id)
+          Logger.debug("Kill node id - #{inspect node_id} pid - #{inspect node_pid}")
+          #Process.exit(node_pid, type)
+          GenServer.stop(node_pid, type)
+        rescue
+          MatchError ->
+            Logger.warn("No active node found in registry for #{inspect node_id}")
 
+            _->
+              Logger.warn("Node found in registry for #{inspect node_id} is already dormant")
+        end
       end
-
     end
-
     {:noreply, state}
   end
 end
